@@ -1,5 +1,7 @@
 const jwt = require("jsonwebtoken");
-const doctorAuthorization = async (req, res, next) => {
+const Doctor = require("../models/doctor.model");
+
+exports.doctorAuthorization = async (req, res, next) => {
     try {
         const { token } = req.cookies;
         if (!token) {
@@ -12,4 +14,18 @@ const doctorAuthorization = async (req, res, next) => {
         res.status(500).send({ message: `${error.message}` });
     }
 };
-module.exports = doctorAuthorization;
+
+exports.authorizationRoles = async (req, res, next) => {
+    try {
+        const doctorData = await Doctor.findById(req.doctor_id);
+
+        if (doctorData.role !== "doctor") {
+            res.status(400).send({
+                message: "This URL only have access to doctor",
+            });
+        }
+        next();
+    } catch (error) {
+        res.status(500).send({ message: `${error.message}` });
+    }
+};
